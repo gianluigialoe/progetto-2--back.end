@@ -1,0 +1,213 @@
+1---SELECT COUNT(*) AS NumeroVerbali
+  FROM [compito settimanale 1].[dbo].[VERBALE]
+
+
+
+2--SELECT A.[IDAnagrafica],
+    A.[Cognome],
+    A.[Nome],
+    COUNT(V.[ID VERBALE]) AS NumeroVerbaliTrascritti
+FROM [compito settimanale 1].[dbo].[ANAGRAFIA] A
+LEFT JOIN [compito settimanale 1].[dbo].[VERBALE] V ON A.[IDAnagrafica] = V.[IDAnagrafica]
+GROUP BY A.[IDAnagrafica], A.[Cognome], A.[Nome];
+
+
+3--SELECT
+    VIO.[ID VIOLAZIONE],
+    VIO.[DESCRIZIONE],
+    COUNT(VER.[ID VERBALE]) AS NumeroVerbaliTrascritti
+FROM
+    [compito settimanale 1].[dbo].[VIOLAZIONI] VIO
+LEFT JOIN
+    [compito settimanale 1].[dbo].[VERBALE] VER ON VIO.[ID VIOLAZIONE] = VER.[ID Violazione]
+WHERE
+    VER.[ID VERBALE] IS NOT NULL
+GROUP BY
+    VIO.[ID VIOLAZIONE], VIO.[DESCRIZIONE];
+
+4---SELECT
+    ANA.[IDAnagrafica],
+    ANA.[Cognome],
+    ANA.[Nome],
+    SUM(VER.[DecurtamentoPunti]) AS TotalePuntiDecurtati
+FROM
+    [compito settimanale 1].[dbo].[ANAGRAFIA] ANA
+LEFT JOIN
+    [compito settimanale 1].[dbo].[VERBALE] VER ON ANA.[IDAnagrafica] = VER.[IDAnagrafica]
+GROUP BY
+    ANA.[IDAnagrafica], ANA.[Cognome], ANA.[Nome];
+
+
+5--SELECT
+    ANA.[Cognome],
+    ANA.[Nome],
+    VER.[DataViolazione],
+    VER.[IndirizzoViolazione],
+    VER.[Importo],
+    VER.[DecurtamentoPunti]
+FROM
+    [compito settimanale 1].[dbo].[ANAGRAFIA] ANA
+JOIN
+    [compito settimanale 1].[dbo].[VERBALE] VER ON ANA.[IDAnagrafica] = VER.[IDAnagrafica]
+WHERE
+    ANA.[Città] = 'Palermo';
+
+
+6---    A.[Cognome],
+    A.[Nome],
+    A.[Indirizzo],
+    V.[DataViolazione],
+    V.[Importo],
+    V.[DecurtamentoPunti]
+FROM 
+    [compito settimanale 1].[dbo].[ANAGRAFIA] A
+JOIN 
+    [compito settimanale 1].[dbo].[VERBALE] V ON A.[IDAnagrafica] = V.[IDAnagrafica]
+WHERE 
+    V.[DataViolazione] BETWEEN '2009-02-01' AND '2009-07-31';
+
+7--SELECT 
+    A.[IDAnagrafica],
+    A.[Cognome],
+    A.[Nome],
+    SUM(V.[Importo]) AS TotaleImporti
+FROM 
+    [compito settimanale 1].[dbo].[ANAGRAFIA] A
+JOIN 
+    [compito settimanale 1].[dbo].[VERBALE] V ON A.[IDAnagrafica] = V.[IDAnagrafica]
+GROUP BY 
+    A.[IDAnagrafica],
+    A.[Cognome],
+    A.[Nome];
+
+
+8--SELECT *
+FROM [compito settimanale 1].[dbo].[ANAGRAFIA]
+WHERE [Città] = 'Palermo';
+
+
+9--SELECT
+    V.[DataViolazione],
+    V.[Importo],
+    V.[DecurtamentoPunti]
+FROM
+    [compito settimanale 1].[dbo].[VERBALE] AS V
+JOIN
+    [compito settimanale 1].[dbo].[VIOLAZIONI] AS VI ON V.[ID Violazione] = VI.[ID VIOLAZIONE]
+WHERE
+    V.[DataViolazione] = '2024-02-09'; -- Sostituisci con la data desiderata
+
+
+10---SELECT
+    [Nominativo_Agente],
+    COUNT(*) AS ConteggioViolazioni
+FROM
+    [compito settimanale 1].[dbo].[VERBALE]
+GROUP BY
+    [Nominativo_Agente];
+
+11---SELECT
+    A.Cognome,
+    A.Nome,
+    V.IndirizzoViolazione,
+    V.DataViolazione,
+    V.Importo,
+    V.DecurtamentoPunti
+FROM
+    [compito settimanale 1].[dbo].[VERBALE] AS V
+JOIN
+    [compito settimanale 1].[dbo].[ANAGRAFIA] AS A ON V.IDAnagrafica = A.IDAnagrafica
+WHERE
+    V.DecurtamentoPunti > 5;
+
+
+12--SELECT
+    A.[Cognome],
+    A.[Nome],
+    A.[Indirizzo],
+    V.[DataViolazione],
+    V.[Importo],
+    V.[DecurtamentoPunti]
+FROM
+    [compito settimanale 1].[dbo].[VERBALE] AS V
+JOIN
+    [compito settimanale 1].[dbo].[ANAGRAFIA] AS A ON V.[IDAnagrafica] = A.[IDAnagrafica]
+WHERE
+    V.[Importo] > 400;
+
+
+
+
+
+
+
+
+
+1) SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+CREATE PROCEDURE GetContravvenzioniByYear
+    @Anno INT
+AS
+BEGIN
+    SELECT
+        V.[ID VERBALE],
+        V.[DataViolazione],
+        V.[IndirizzoViolazione],
+        V.[Nominativo_Agente],
+        V.[Importo],
+        V.[DecurtamentoPunti],
+        A.[Cognome] + ' ' + A.[Nome] AS NomeCompleto
+    FROM
+        [compito settimanale 1].[dbo].[VERBALE] V
+    JOIN
+        [compito settimanale 1].[dbo].[ANAGRAFIA] A ON V.[IDAnagrafica] = A.[IDAnagrafica]
+    WHERE
+        YEAR(V.[DataViolazione]) = @Anno;
+END;
+GO
+esempio
+EXEC GetContravvenzioniByYear @Anno = 2024;
+
+
+2)SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE GetTotalePuntiDecurtatiByDate
+    @DataViolazione DATE
+AS
+BEGIN
+    SELECT
+        SUM(DecurtamentoPunti) AS TotalePuntiDecurtati
+    FROM
+        [compito settimanale 1].[dbo].[VERBALE]
+    WHERE
+        CONVERT(DATE, [DataViolazione]) = @DataViolazione;
+END;
+GO
+
+esempio:
+EXEC GetTotalePuntiDecurtatiByDate @DataViolazione = '2024-02-09'; -- Sostituisci con la data desiderata
+
+
+3)SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE EliminaVerbale
+    @IDVerbale INT
+AS
+BEGIN
+    DELETE FROM
+        [compito settimanale 1].[dbo].[VERBALE]
+    WHERE
+        [ID VERBALE] = @IDVerbale;
+END;
+GO
+esempio:
+EXEC EliminaVerbale @IDVerbale = 1; -- Sostituisci con l'ID del verbale da eliminare
+
